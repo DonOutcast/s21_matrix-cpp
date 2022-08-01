@@ -5,13 +5,24 @@
 
 class S21Matrix {
     private:
-    int _rows;
-    int _columns;
-    double **_matrix;
+    int rows_;
+    int columns_;
+    double **matrix_;
     public:
     S21Matrix();
+    S21Matrix(int rows, int columns);
+    S21Matrix(const S21Matrix& other);
+    S21Matrix(S21Matrix&& other);
     ~S21Matrix();
-    output_natrix();
+    void create_matrix();
+    void copy_matrix();
+    void get_columns();
+    void get_rows();
+    void set_columns();
+    void set_rows();
+    void output_matrix();
+
+     S21Matrix& operator=(const S21Matrix& other);
 };
 
 
