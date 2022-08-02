@@ -11,11 +11,11 @@ S21Matrix::S21Matrix(int rows, int columns) {
     this->rows_ = rows;
     this->columns_ = columns;
     this->create_matrix();
-    for (int i = 0; i < rows_; i++) {
-        for (int j = 0; j < columns_; j++) {
-            this->matrix_[i][j] = 0;
-        }
-    }
+    // for (int i = 0; i < rows_; i++) {
+    //     for (int j = 0; j < columns_; j++) {
+    //         this->matrix_[i][j] = 0;
+    //     }
+    // }
 }
 
 S21Matrix::S21Matrix(const S21Matrix& other) {
@@ -26,6 +26,7 @@ S21Matrix::S21Matrix(S21Matrix&& other) {
     this->bring_to_zero();
     this->copy_matrix(other);
     other.clear_matrix();
+    
 }
 
 void S21Matrix::bring_to_zero() {
@@ -34,9 +35,9 @@ void S21Matrix::bring_to_zero() {
 }
 
 void S21Matrix::create_matrix() {
-    this->matrix_ = new double* [rows_];
+    this->matrix_ = new double* [rows_]();  // default 0
     for (int i = 0; i < rows_; i++) {
-        this->matrix_[i] = new double[columns_];
+        this->matrix_[i] = new double[columns_]();  // default 0
     }
 }
 
@@ -58,11 +59,24 @@ S21Matrix::~S21Matrix() {
 }
 
 void S21Matrix::clear_matrix() {
-        for (int i = 0; i < this->rows_; i++) {
+    if (this->matrix_ != nullptr) {
+     for (int i = 0; i < this->rows_; i++) {
         delete [] matrix_[i];
     }
     delete [] matrix_;
+    this->matrix_ = nullptr;
     this->rows_ = this->columns_ = 0;
+    }
+   
+}
+
+void S21Matrix::generarion_numbers() {
+    for (int i = 0, count = 0; i < this->rows_; i++) {
+        for (int j = 0; j < this->columns_; j++) {
+            this->matrix_[i][j] = count++;
+
+        }
+    }
 }
 
 void S21Matrix::output_matrix() {
@@ -112,7 +126,6 @@ void S21Matrix::set_rows(int rows) {
         }
         *this = temp;
     }
-
 }
 
 void S21Matrix::set_columns(int columns) {
@@ -122,20 +135,119 @@ void S21Matrix::set_columns(int columns) {
 
 }
 
-bol eq_matrix(const S21Matrix& other) {
-    result = true;
-    if (A && B && A->columns > 0 && A->columns == B->columns && A->rows == B->rows) {
-        for (int i = 0; i < A->rows && ret != FAILURE; i++) {
-            for (int j = 0; j < A->columns && ret != FAILURE; j++) {
-                if (fabs(A->matrix[i][j] - B->matrix[i][j]) > 1e-07)
+bool S21Matrix::eq_matrix(const S21Matrix& other) {
+    bool result = true;
+    if (this->matrix_ == nullptr && other.matrix_ == nullptr) {
+        throw std::length_error("Two matrixs is empty!!");
+    }
+    else if (this->rows_ < 0  || other.rows_ < 0 ) {
+        throw std::runtime_error("Are you shure man ??");
+    } else if (this->rows_ != other.rows_ || this->columns_ != other.columns_) {
+        throw std::runtime_error("Comone");
+    } else {
+        for (int i = 0; i < this->rows_; i++) {
+            for (int j = 0; j < this->columns_; j++) {
+                if (std::fabs(this->matrix_[i][j] - this->matrix_[i][j]) > 1e-07)
                     result = false;
             }
-        }
-    } else {
-        result = false;
-    }
-    return ret;
+        } 
+    }    
+    return result;
 }
+
+
+
+void S21Matrix::sum_matrix(const S21Matrix& other) {
+  if (this->matrix_ == nullptr && other.matrix_ == nullptr) {
+    throw std::length_error("Two matrixs is empty!!");
+  } 
+  else if (this->rows_ != other.rows_ || this->columns_ != other.columns_) {
+      throw std::length_error("Incorrect size of matrixs");
+} else {
+      for (int i = 0; i < this->rows_; i++) {
+        for (int j = 0; j < this->columns_; j++) {
+          this->matrix_[i][j] += other.matrix_[i][j];
+        }
+      }
+    }
+  
+}
+
+
+void S21Matrix::sub_matrix(const S21Matrix& other) {
+ if (this->matrix_ == nullptr && other.matrix_ == nullptr) {
+    throw std::length_error("Two matrixs is empty!!");
+  } 
+  else if (this->rows_ != other.rows_ || this->columns_ != other.columns_) {
+      throw std::length_error("Incorrect size of matrixs");
+} else {
+      for (int i = 0; i < this->rows_; i++) {
+        for (int j = 0; j < this->columns_; j++) {
+          this->matrix_[i][j] -= other.matrix_[i][j];
+        }
+      }
+    }
+
+}
+
+
+void S21Matrix::mul_number(const double num) {
+    if (this->matrix_ == nullptr) {
+        throw std::length_error("Two matrixs is empty!!");
+    } else {
+        for (int i = 0; i < this->rows_; i++) {
+            for (int j = 0; j < this->columns_; j++) {
+                this->matrix_[i][j] *= num;
+            }
+        }
+    }
+}
+
+void S21Matrix::mul_matrix(const S21Matrix& other) {
+    if (!this->matrix_ || !other.matrix_) {
+        throw std::length_error("Two matrixs is empty!!");
+    } else if (this->columns_ != other.rows_ || this->rows_ != other.columns_ || this->columns_ <= 0 || this->columns_ <= 0) {
+        throw std::runtime_error("Incorrect size of rows or columns");
+    } 
+        S21Matrix result(this->rows_, other.columns_);
+        for (int i = 0; i < this->rows_; i++) {
+            for (int j = 0; j < other.columns_; j++) {
+                for (int k = 0; k < this->columns_; k++) {
+                    result.matrix_[i][j] += this->matrix_[i][k] * other.matrix_[k][j];
+                
+            }
+        }
+    }
+    *this = result;
+}
+
+
+// S21Matrix S21Matrix::transpose() {
+//   if (!this->matrix_) {
+//      throw std::length_error("Matrixs is empty!!");
+//   } 
+//     S21Matrix result(this->columns_, this->rows_);
+//     for (int i = 0; i < this->rows_; i++) {
+//       for (int j = 0; j < this->columns_; j++) {
+//         result.matrix_[j][i] = this->matrix_[i][j];
+//       }
+    
+//   }
+
+//   return result;
+// }
+
+S21Matrix S21Matrix::transpose() {
+    S21Matrix result(this->columns_, this->rows_);
+    for (auto row = 0; row < this->rows_; row++) {
+        for (auto col = 0; col < this->columns_; col++) {
+            result.matrix_[col][row] = this->matrix_[row][col];
+        }
+    }
+    return result;
+}
+
+
 
 // int check_square(matrix_t *A) {
 //   int output = 0;
@@ -153,6 +265,8 @@ bol eq_matrix(const S21Matrix& other) {
 //   }
 //   return result;
 // }
+
+
 
 // void s21_remove_matrix(matrix_t *A) {
 //   for (int i = 0; i < A->rows; i++) {
@@ -180,99 +294,15 @@ bol eq_matrix(const S21Matrix& other) {
 
 
 
-// int s21_sum_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
-//   int output = OK;
-//   if (check_matrix(A) && check_matrix(B)) {
-//     output = INCORRECT_MATRIX;
-//   } else {
-//     if (A->rows != B->rows || A->columns != B->columns) {
-//       output = ERROR;
-//     } else {
-//       s21_create_matrix(A->rows, B->columns, result);
-//       for (int i = 0; i < A->rows; i++) {
-//         for (int j = 0; j < A->columns; j++) {
-//           result->matrix[i][j] = A->matrix[i][j] + B->matrix[i][j];
-//         }
-//       }
-//     }
-//   }
-
-//   return output;
-// }
-
-// int s21_sub_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
-//   int output = OK;
-//   if (check_matrix(A) && check_matrix(B)) {
-//     output = INCORRECT_MATRIX;
-//   } else {
-//     if (A->rows != B->rows || A->columns != B->columns) {
-//       output = ERROR;
-//     } else {
-//       s21_create_matrix(A->rows, B->columns, result);
-//       for (int i = 0; i < A->rows; i++) {
-//         for (int j = 0; j < B->columns; j++) {
-//           result->matrix[i][j] = A->matrix[i][j] - B->matrix[i][j];
-//         }
-//       }
-//     }
-//   }
-
-//   return output;
-// }
-
-// int s21_mult_number(matrix_t *A, double number, matrix_t *result) {
-//   int output = OK;
-//   if (check_matrix(A)) {
-//     output = INCORRECT_MATRIX;
-//   } else {
-//     s21_create_matrix(A->rows, A->columns, result);
-//     for (int i = 0; i < A->rows; i++) {
-//       for (int j = 0; j < A->columns; j++) {
-//         result->matrix[i][j] = A->matrix[i][j] * number;
-//       }
-//     }
-//   }
-//   return output;
-// }
-// int s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
-//     int ret_val = 0;
-//     if (!A || !B || !result || !A->matrix || !B->matrix) {
-//         ret_val = 1;
-//     } else if (A->columns != B->rows || A->rows != B->columns || A->columns <= 0 || B->columns <= 0) {
-//         ret_val = 2;
-//     } else {
-//         s21_create_matrix(A->rows, B->columns, result);
-//         for (int i = 0; i < result->rows; i++) {
-//             for (int j = 0; j < result->columns; j++) {
-//                 long double res = 0;
-//                 for (int k = 0; k < A->columns; k++)
-//                     res += A->matrix[i][k] * B->matrix[k][j];
-//                 result->matrix[i][j] = (double)res;
-//             }
-//         }
-//     }
-//     return ret_val;
-// }
 
 
 
 
 
-// int s21_transpose(matrix_t *A, matrix_t *result) {
-//   int output = OK;
-//   if (check_matrix(A)) {
-//     output = ERROR;
-//   } else {
-//     s21_create_matrix(A->columns, A->rows, result);
-//     for (int i = 0; i < A->rows; i++) {
-//       for (int j = 0; j < A->columns; j++) {
-//         result->matrix[j][i] = A->matrix[i][j];
-//       }
-//     }
-//   }
 
-//   return output;
-// }
+
+
+
 
 // int s21_determinant(matrix_t *A, double *determ) {
 //   int output = OK;
@@ -377,14 +407,16 @@ bol eq_matrix(const S21Matrix& other) {
 
 
 int main(void) {
-    // S21Matrix a(10, 10);
-    // S21Matrix b(a);
-    // std::cout << "Matrix A: " << std::endl;
-    // a.output_matrix();
-    // std::cout << "Matrix B: " << std::endl;
-    // b.output_matrix();
-    // a = b;
-    // std::cout << "Matrix A new: " << std::endl;
-    // a.output_matrix();
+    S21Matrix a(3, 3);
+    S21Matrix b(3, 3);
+    a.generarion_numbers();
+    b.generarion_numbers();
+    std::cout << "Matrix A: " << std::endl;
+    a.output_matrix();
+    std::cout << "Matrix B: " << std::endl;
+    b.output_matrix();
+    b = a.transpose();
+    std::cout << "Matrix A new: " << std::endl;
+    b.output_matrix();
     return 0;
 }

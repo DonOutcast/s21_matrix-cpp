@@ -2,7 +2,8 @@
 #define SRC_S21_MATRIX_OOP_H
 #include <iostream>
 #include <stdexcept>
-
+#include <cmath>
+ 
 class S21Matrix {
     private:
     int rows_;
@@ -25,12 +26,18 @@ class S21Matrix {
     void set_columns(int columns);
     void set_rows(int rows);
     void output_matrix();
+    void generarion_numbers();
 
 
     bool eq_matrix(const S21Matrix& other);
+    void sum_matrix(const S21Matrix& other);
+    void sub_matrix(const S21Matrix& other);
+    void mul_number(const double num);
+    void mul_matrix(const S21Matrix& other);
+    S21Matrix transpose();
+    S21Matrix calc_complements();
 
-
-     S21Matrix& operator=(const S21Matrix& other);
+    S21Matrix& operator=(const S21Matrix& other);
 };
 
 
