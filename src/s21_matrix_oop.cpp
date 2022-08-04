@@ -94,6 +94,8 @@ void S21Matrix::output_matrix() {
 
 }
 
+
+
 S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
     if (this->matrix_ == nullptr) {
         this->copy_matrix(other);
@@ -124,6 +126,13 @@ S21Matrix S21Matrix::operator*(const S21Matrix& other) {
     return operand_a;
 }
 
+S21Matrix S21Matrix::operator*(const double num) {
+    S21Matrix result(*this);
+    result.mul_number(num);
+    return result;
+}
+
+
 bool S21Matrix::operator==(const S21Matrix& other) {
     return this->eq_matrix(other);
 }
@@ -140,6 +149,11 @@ S21Matrix S21Matrix::operator-=(const S21Matrix& other) {
 
 S21Matrix S21Matrix::operator*=(const S21Matrix& other) {
     this->mul_matrix(other);
+    return *this;
+}
+
+S21Matrix S21Matrix::operator*=(const double num) {
+    this->mul_number(num);
     return *this;
 }
 
@@ -161,13 +175,16 @@ void S21Matrix::set_rows(int rows) {
     if (rows <= 0) {
         throw std::length_error("Rows is less or equal 0");
     }
-        S21Matrix temp(rows, this->columns_);
-        for (int i = 0; i < this->rows_; i++) {
-            for (int j = 0; j < this->columns_; j++) {
-                temp.matrix_[i][j] = this->matrix_[i][j];
-            }
+    S21Matrix temp(rows, this->columns_);
+    int min_rows = (rows < this->rows_) ? rows : this->rows_;
+    
+    for (int i = 0; i < min_rows; i++) {
+        for (int j = 0; j < this->columns_; j++) {
+            temp.matrix_[i][j] = this->matrix_[i][j];
         }
-        *this = temp;
+    }
+    this->clear_matrix();
+    *this = temp;
     
 }
 
@@ -176,12 +193,15 @@ void S21Matrix::set_columns(int columns) {
         throw std::length_error("Rows is less or equal 0");
     }
     S21Matrix temp(this->rows_, columns);
+    if (columns < this->columns_) {
+            this->columns_ = columns;
+        }
         for (int i = 0; i < this->rows_; i++) {
             for (int j = 0; j < this->columns_; j++) {
                 temp.matrix_[i][j] = this->matrix_[i][j];
             }
         }
-        *this = temp
+        *this = temp;
 
 }
 
@@ -193,7 +213,7 @@ bool S21Matrix::eq_matrix(const S21Matrix& other) {
     else if (this->rows_ < 0  || other.rows_ < 0 ) {
         throw std::runtime_error("Are you shure man ??");
     } else if (this->rows_ != other.rows_ || this->columns_ != other.columns_) {
-        throw std::runtime_error("Comone");
+        throw std::runtime_error("Comone eq");
     } else {
         for (int i = 0; i < this->rows_; i++) {
             for (int j = 0; j < this->columns_; j++) {
@@ -254,7 +274,7 @@ void S21Matrix::mul_number(const double num) {
 void S21Matrix::mul_matrix(const S21Matrix& other) {
     if (!this->matrix_ || !other.matrix_) {
         throw std::length_error("Two matrixs is empty!!");
-    } else if (this->columns_ != other.rows_  || this->columns_ <= 0 || this->columns_ <= 0) {
+    } else if (this->columns_ != other.rows_) {
         throw std::runtime_error("Incorrect size of rows or columns");
     } 
         S21Matrix result(this->rows_, other.columns_);
@@ -288,7 +308,7 @@ void S21Matrix::cut_matrix(S21Matrix& result, int rows_A, int columns_A) {
 double  S21Matrix::determinant() {
   double result = 0;
   if (!this->matrix_) {
-      throw std::length_error("Matrix is empty");
+      throw std::length_error("Matrix is empty d");
   } else {
     if (this->rows_ == this->columns_) {
       if (this->rows_ == 1) result = this->matrix_[0][0];
@@ -331,7 +351,7 @@ S21Matrix S21Matrix::transpose() {
 
 S21Matrix S21Matrix::calc_complements() {
   if (this->matrix_ == nullptr) {
-      throw std::length_error("Matrix is empty!");
+      throw std::length_error("Matrix is empty! c");
   }
   if (this->columns_ != this->rows_) {
       throw std::length_error("Error in len of matrix");
@@ -352,8 +372,8 @@ S21Matrix S21Matrix::calc_complements() {
 
 
 S21Matrix S21Matrix::inverse_matrix() {
-    S21Matrix tmp;
-    S21Matrix tmp1;
+    S21Matrix tmp(3,3);
+    S21Matrix tmp1(3,3);
   if (!this->matrix_) {
     throw std::length_error("Matrix is empty");
   } else {
@@ -375,17 +395,17 @@ S21Matrix S21Matrix::inverse_matrix() {
   return tmp1;
 }
 
-int main(void) {
-    S21Matrix a(3, 3);
-    S21Matrix b(3, 3);
-    a.generarion_numbers();
-    b.generarion_numbers();
-    std::cout << "Matrix A: " << std::endl;
-    a.output_matrix();
-    std::cout << "Matrix B: " << std::endl;
-    b.output_matrix();
-    std::cout << "Matrix A new: " << std::endl;
-    a(0, 0) = 1;
-    a.output_matrix();
-    return 0;
-}
+// int main(void) {
+//     S21Matrix a(3, 3);
+//     S21Matrix b(3, 3);
+//     a.generarion_numbers();
+//     b.generarion_numbers();
+//     std::cout << "Matrix A: " << std::endl;
+//     a.output_matrix();
+//     std::cout << "Matrix B: " << std::endl;
+//     b.output_matrix();
+//     std::cout << "Matrix A new: " << std::endl;
+//     a(0, 0) = 1;
+//     a.output_matrix();
+//     return 0;
+// }
