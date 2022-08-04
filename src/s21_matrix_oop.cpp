@@ -384,7 +384,7 @@ S21Matrix S21Matrix::inverse_matrix() {
 
     determ =this->determinant();
     if (std::fabs(determ) > 1e-7) {
-      tmp.calc_complements();
+      tmp = this->calc_complements();
       tmp1 = tmp.transpose();
       tmp1.mul_number( 1 / determ);
     } else {
