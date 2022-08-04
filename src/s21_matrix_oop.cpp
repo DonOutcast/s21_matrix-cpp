@@ -217,7 +217,7 @@ bool S21Matrix::eq_matrix(const S21Matrix& other) {
     } else {
         for (int i = 0; i < this->rows_; i++) {
             for (int j = 0; j < this->columns_; j++) {
-                if (std::fabs(this->matrix_[i][j] - this->matrix_[i][j]) > 1e-07)
+                if (std::fabs(this->matrix_[i][j] - other.matrix_[i][j]) > 1e-07)
                     result = false;
             }
         } 
@@ -395,17 +395,3 @@ S21Matrix S21Matrix::inverse_matrix() {
   return tmp1;
 }
 
-// int main(void) {
-//     S21Matrix a(3, 3);
-//     S21Matrix b(3, 3);
-//     a.generarion_numbers();
-//     b.generarion_numbers();
-//     std::cout << "Matrix A: " << std::endl;
-//     a.output_matrix();
-//     std::cout << "Matrix B: " << std::endl;
-//     b.output_matrix();
-//     std::cout << "Matrix A new: " << std::endl;
-//     a(0, 0) = 1;
-//     a.output_matrix();
-//     return 0;
-// }
