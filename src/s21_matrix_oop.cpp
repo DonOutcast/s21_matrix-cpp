@@ -1,6 +1,6 @@
 #include "s21_matrix_oop.h"
 
-S21Matrix::S21Matrix() {
+S21Matrix::S21Matrix() {    
     this->bring_to_zero();
 }
 
@@ -106,6 +106,50 @@ S21Matrix& S21Matrix::operator=(const S21Matrix& other) {
     return *this;
 }
 
+S21Matrix S21Matrix::operator+(const S21Matrix& other) {
+    S21Matrix operand_a(*this);
+    operand_a.sum_matrix(other);
+    return operand_a;
+}
+
+S21Matrix S21Matrix::operator-(const S21Matrix& other) {
+    S21Matrix operand_a(*this);
+    operand_a.sub_matrix(other);
+    return operand_a;
+}
+
+S21Matrix S21Matrix::operator*(const S21Matrix& other) {
+    S21Matrix operand_a(*this);
+    operand_a.mul_matrix(other);
+    return operand_a;
+}
+
+bool S21Matrix::operator==(const S21Matrix& other) {
+    return this->eq_matrix(other);
+}
+
+S21Matrix S21Matrix::operator+=(const S21Matrix& other) {
+    this->sum_matrix(other);
+    return *this;
+}
+
+S21Matrix S21Matrix::operator-=(const S21Matrix& other) {
+    this->sub_matrix(other);
+    return *this;
+}
+
+S21Matrix S21Matrix::operator*=(const S21Matrix& other) {
+    this->mul_matrix(other);
+    return *this;
+}
+
+double& S21Matrix::operator()(int i, int j) {
+    if (i >= this->rows_ || j >= this->columns_ || i < 0 || j < 0) {
+        throw std::out_of_range("Incorrect index!"); 
+    }
+    return this->matrix_[i][j];
+}
+
 int S21Matrix::get_rows() {
     return this->rows_;
 }
@@ -117,21 +161,27 @@ void S21Matrix::set_rows(int rows) {
     if (rows <= 0) {
         throw std::length_error("Rows is less or equal 0");
     }
-    if (this->rows_ > 0) {
         S21Matrix temp(rows, this->columns_);
-        for (int i = 0; i < rows; i++) {
+        for (int i = 0; i < this->rows_; i++) {
             for (int j = 0; j < this->columns_; j++) {
                 temp.matrix_[i][j] = this->matrix_[i][j];
             }
         }
         *this = temp;
-    }
+    
 }
 
 void S21Matrix::set_columns(int columns) {
     if (columns <= 0) {
         throw std::length_error("Rows is less or equal 0");
     }
+    S21Matrix temp(this->rows_, columns);
+        for (int i = 0; i < this->rows_; i++) {
+            for (int j = 0; j < this->columns_; j++) {
+                temp.matrix_[i][j] = this->matrix_[i][j];
+            }
+        }
+        *this = temp
 
 }
 
@@ -154,7 +204,6 @@ bool S21Matrix::eq_matrix(const S21Matrix& other) {
     }    
     return result;
 }
-
 
 
 void S21Matrix::sum_matrix(const S21Matrix& other) {
@@ -190,7 +239,6 @@ void S21Matrix::sub_matrix(const S21Matrix& other) {
 
 }
 
-
 void S21Matrix::mul_number(const double num) {
     if (this->matrix_ == nullptr) {
         throw std::length_error("Two matrixs is empty!!");
@@ -206,7 +254,7 @@ void S21Matrix::mul_number(const double num) {
 void S21Matrix::mul_matrix(const S21Matrix& other) {
     if (!this->matrix_ || !other.matrix_) {
         throw std::length_error("Two matrixs is empty!!");
-    } else if (this->columns_ != other.rows_ || this->rows_ != other.columns_ || this->columns_ <= 0 || this->columns_ <= 0) {
+    } else if (this->columns_ != other.rows_  || this->columns_ <= 0 || this->columns_ <= 0) {
         throw std::runtime_error("Incorrect size of rows or columns");
     } 
         S21Matrix result(this->rows_, other.columns_);
@@ -222,189 +270,110 @@ void S21Matrix::mul_matrix(const S21Matrix& other) {
 }
 
 
-// S21Matrix S21Matrix::transpose() {
-//   if (!this->matrix_) {
-//      throw std::length_error("Matrixs is empty!!");
-//   } 
-//     S21Matrix result(this->columns_, this->rows_);
-//     for (int i = 0; i < this->rows_; i++) {
-//       for (int j = 0; j < this->columns_; j++) {
-//         result.matrix_[j][i] = this->matrix_[i][j];
-//       }
-    
-//   }
-
-//   return result;
-// }
-
-S21Matrix S21Matrix::transpose() {
-    S21Matrix result(this->columns_, this->rows_);
-    for (auto row = 0; row < this->rows_; row++) {
-        for (auto col = 0; col < this->columns_; col++) {
-            result.matrix_[col][row] = this->matrix_[row][col];
+void S21Matrix::cut_matrix(S21Matrix& result, int rows_A, int columns_A) {
+  for (int i = 0, a = 0; i < this->rows_; i++) {
+    if (columns_A != i) {
+      for (int j = 0, b = 0; j < this->rows_; j++) {
+        if (rows_A != j) {
+          result.matrix_[a][b] = this->matrix_[i][j];
+          b++;
         }
+      }
+      a++;
     }
-    return result;
+  }
 }
 
 
+double  S21Matrix::determinant() {
+  double result = 0;
+  if (!this->matrix_) {
+      throw std::length_error("Matrix is empty");
+  } else {
+    if (this->rows_ == this->columns_) {
+      if (this->rows_ == 1) result = this->matrix_[0][0];
+      if (this->rows_ == 2) {
+        result = (this->matrix_[0][0] * this->matrix_[1][1]) -
+                  (this->matrix_[0][1] * this->matrix_[1][0]);
+      }
+      if (this->rows_ > 2) {
+         double tmp = 0; 
+        for (int i = 0; i < this->rows_; i++) {
+          S21Matrix minor(this->rows_ - 1, this->columns_ -1);
+          cut_matrix(minor, 0, i);
+          result = minor.determinant();
+          tmp += this->matrix_[i][0] * pow(-1, i) * result;
+          result = tmp;
+        }
+      }
+    } else {
+      throw std::runtime_error("Error with size");
+    }
+  }
+  return result;
+}
 
-// int check_square(matrix_t *A) {
-//   int output = 0;
-//   if (A->rows == A->columns) {
-//     output = 1;
-//   }
-//   return output;
-// }
+S21Matrix S21Matrix::transpose() {
+  if (!this->matrix_) {
+     throw std::length_error("Matrixs is empty!!");
+  } 
+    S21Matrix result(this->columns_, this->rows_);
+    for (int i = 0; i < this->rows_; i++) {
+      for (int j = 0; j < this->columns_; j++) {
+        result.matrix_[j][i] = this->matrix_[i][j];
+      }
+    
+  }
 
-// int check_matrix(matrix_t *matrix) {
-//   int result = INCORRECT_MATRIX;
-//   if ((matrix != NULL) && (matrix->matrix != NULL) && (matrix->rows > 0) &&
-//       (matrix->columns > 0)) {
-//     result = OK;
-//   }
-//   return result;
-// }
-
-
-
-// void s21_remove_matrix(matrix_t *A) {
-//   for (int i = 0; i < A->rows; i++) {
-//     free(A->matrix[i]);
-//   }
-//   free(A->matrix);
-// }
-
-// int s21_create_matrix(int rows, int columns, matrix_t *result) {
-//   int output = OK;
-//   if (rows <= 0 || columns <= 0) {
-//     output = INCORRECT_MATRIX;
-//   }
-//   result->rows = rows;
-//   result->columns = columns;
-//   result->matrix = (double **)malloc(
-//       rows * sizeof(double *));  // add malloc faile after using a malloc
-//   for (int i = 0; i < rows; i++) {
-//     result->matrix[i] = (double *)malloc(columns * sizeof(double));
-//   }
-
-//   return output;
-// }
-
-
+  return result;
+}
 
 
+S21Matrix S21Matrix::calc_complements() {
+  if (this->matrix_ == nullptr) {
+      throw std::length_error("Matrix is empty!");
+  }
+  if (this->columns_ != this->rows_) {
+      throw std::length_error("Error in len of matrix");
+  } 
+      S21Matrix result(this->rows_, this->columns_);
+      S21Matrix determ(this->rows_ - 1, this->columns_ - 1);
+        double temp = 0;
+        for (int i = 0; i < this->rows_; i++) {
+          for (int j = 0; j < this->columns_; j++) {
+            this->cut_matrix(determ, j, i);
+            temp = determ.determinant();
+            result.matrix_[i][j] = pow(-1, i + j) * temp;
+            
+        }
+        }
+  return result;
+}
 
 
+S21Matrix S21Matrix::inverse_matrix() {
+    S21Matrix tmp;
+    S21Matrix tmp1;
+  if (!this->matrix_) {
+    throw std::length_error("Matrix is empty");
+  } else {
+    if (this->rows_ != this->columns_) {
+    throw std::runtime_error("Man are you shure???");
+  } else {
+    double determ = 0;
 
-
-
-
-
-
-
-
-// int s21_determinant(matrix_t *A, double *determ) {
-//   int output = OK;
-//   double tmp = 0;
-//   if (check_matrix(A)) {
-//     output = ERROR;
-//   } else {
-//     if (check_square(A)) {
-//       if (A->rows == 1) *determ = A->matrix[0][0];
-//       if (A->rows == 2) {
-//         *determ = (A->matrix[0][0] * A->matrix[1][1]) -
-//                   (A->matrix[0][1] * A->matrix[1][0]);
-//       }
-//       if (A->rows > 2) {
-//         for (int i = 0; i < A->rows; i++) {
-//           matrix_t decrMatrix;
-//           cut_matrix(A, 0, i, &decrMatrix);
-//           s21_determinant(&decrMatrix, determ);
-//           tmp += A->matrix[i][0] * pow(-1, i) * (*determ);
-//           s21_remove_matrix(&decrMatrix);
-//           *determ = tmp;
-//         }
-//       }
-//     } else {
-//       *determ = NAN;
-//       output = ERROR;
-//     }
-//   }
-
-//   return output;
-// }
-
-// void cut_matrix(matrix_t *A, int rows_A, int columns_A, matrix_t *tmp) {
-//   s21_create_matrix(A->rows - 1, A->columns - 1, tmp);
-//   for (int i = 0, a = 0; i < A->rows; i++) {
-//     if (columns_A != i) {
-//       for (int j = 0, b = 0; j < A->rows; j++) {
-//         if (rows_A != j) {
-//           tmp->matrix[a][b] = A->matrix[i][j];
-//           b++;
-//         }
-//       }
-//       a++;
-//     }
-//   }
-// }
-
-// int s21_calc_complements(matrix_t *A, matrix_t *result) {
-//   double determ = 0;
-//   int output = OK;
-//   matrix_t tmp;
-//   if (A->columns != A->rows) {
-//     output = ERROR;
-//   } else {
-//     if (check_matrix(A)) {
-//       output = INCORRECT_MATRIX;
-//     } else {
-//       s21_create_matrix(A->rows, A->columns, result);
-//       if (check_square(A)) {
-//         for (int i = 0; i < A->rows; i++) {
-//           for (int j = 0; j < A->columns; j++) {
-//             cut_matrix(A, j, i, &tmp);
-//             s21_determinant(&tmp, &determ);
-//             result->matrix[i][j] = pow(-1, i + j) * determ;
-//             s21_remove_matrix(&tmp);
-//           }
-//         }
-//       }
-//     }
-//   }
-
-//   return output;
-// }
-
-// int s21_inverse_matrix(matrix_t *A, matrix_t *result) {
-//   int output = OK;
-//   if (check_matrix(A)) {
-//     output = INCORRECT_MATRIX;
-//   } else {
-//     if (A->rows != A->columns) {
-//     output = ERROR;
-//   } else {
-//     double determ = 0;
-//     matrix_t tmp;
-//     matrix_t tmp1;
-//     s21_determinant(A, &determ);
-//     if (fabs(determ) > 1e-7) {
-//       s21_calc_complements(A, &tmp);
-//       s21_transpose(&tmp, &tmp1);
-//       s21_remove_matrix(&tmp);
-//       s21_mult_number(&tmp1, 1 / determ, result);
-//       s21_remove_matrix(&tmp1);
-//     } else {
-//       output = INCORRECT_MATRIX;
-//     }
-//   }
-//   }
-//   return output;
-// }
-
-
-
+    determ =this->determinant();
+    if (std::fabs(determ) > 1e-7) {
+      tmp.calc_complements();
+      tmp1 = tmp.transpose();
+      tmp1.mul_number( 1 / determ);
+    } else {
+      throw std::length_error("Your determ is 0!!!!");
+    }
+  }
+  }
+  return tmp1;
+}
 
 int main(void) {
     S21Matrix a(3, 3);
@@ -415,8 +384,8 @@ int main(void) {
     a.output_matrix();
     std::cout << "Matrix B: " << std::endl;
     b.output_matrix();
-    b = a.transpose();
     std::cout << "Matrix A new: " << std::endl;
-    b.output_matrix();
+    a(0, 0) = 1;
+    a.output_matrix();
     return 0;
 }

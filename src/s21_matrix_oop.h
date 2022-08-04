@@ -36,8 +36,20 @@ class S21Matrix {
     void mul_matrix(const S21Matrix& other);
     S21Matrix transpose();
     S21Matrix calc_complements();
+    void cut_matrix(S21Matrix& result, int rows_A, int columns_A);
+    double determinant();
+    S21Matrix inverse_matrix();
 
     S21Matrix& operator=(const S21Matrix& other);
+    bool operator==(const S21Matrix& other);
+    S21Matrix operator+=(const S21Matrix& other);
+    S21Matrix operator-=(const S21Matrix& other);
+    S21Matrix operator*=(const S21Matrix& other);
+    S21Matrix operator+(const S21Matrix& other);
+    S21Matrix operator-(const S21Matrix& other);
+    S21Matrix operator*(const S21Matrix& other);
+    double& operator()(int i, int j);
+
 };
 
 
